@@ -4,7 +4,7 @@ export default class NewsApiService {
   constructor() {
     this.searchQuery = '';
     this.page = 1;
-    this.totalPage = 20;
+    this.totalPage = 0;
   }
 
   async searchGelleryPhoto() {
@@ -17,7 +17,7 @@ export default class NewsApiService {
       image_type: 'photo',
       orientation: 'horizontal',
       safesearch: true,
-      per_page: 20,
+      per_page: 40,
       page: `${this.page}`,
     };
 
@@ -26,10 +26,10 @@ export default class NewsApiService {
     return res;
   }
   onTotalPage() {
-    this.totalPage += 20;
+    this.totalPage += 40;
   }
   onTotalPageReset() {
-    this.totalPage = 20;
+    this.totalPage = 40;
   }
   incrementPage() {
     this.page += 1;

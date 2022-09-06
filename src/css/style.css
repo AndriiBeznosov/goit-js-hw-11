@@ -88,6 +88,7 @@ li {
   display: flex;
   flex-wrap: wrap;
   margin: -15px;
+  justify-content: center;
 }
 
 .photo-card {
