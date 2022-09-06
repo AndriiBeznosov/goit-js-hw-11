@@ -125,7 +125,9 @@ li {
 .btn-primary {
   display: block;
   margin-top: 30px;
+  transition: opacity 250ms ease-in-out;
 }
 .is-hidden {
-  display: none;
+  visibility: hidden;
+  opacity: 0;
 }
