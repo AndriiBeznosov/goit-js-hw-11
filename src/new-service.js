@@ -8,8 +8,6 @@ export default class NewsApiService {
   }
 
   async searchGelleryPhoto() {
-    console.log(this);
-
     const URL = 'https://pixabay.com/api/';
     const params = {
       key: '25684992-ec31d25fc66c7364d0851b638',

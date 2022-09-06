@@ -4,7 +4,6 @@ import debounce from 'lodash.debounce';
 import LoadMoreBtn from './load-more-btn';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-// import './css/commons.css';
 
 const DEBOUNCE_DELAY = 300;
 const refs = {
@@ -18,10 +17,9 @@ const loadMoreBtn = new LoadMoreBtn({
   hidden: true,
 });
 const newsApiService = new NewsApiService();
-console.log(loadMoreBtn);
 
 refs.form.addEventListener('submit', searchImage);
-loadMoreBtn.refs.button.addEventListener('click', fetchArticals);
+loadMoreBtn.refs.button.addEventListener('click', getCollectionPhotoRequest);
 refs.input.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
 
 function onInput() {
@@ -41,22 +39,14 @@ function searchImage(e) {
   loadMoreBtn.show();
   newsApiService.resetPage();
   newsApiService.onTotalPageReset();
-  fetchArticals();
+  getCollectionPhotoRequest();
   refs.btnSearch.disabled = true;
-  clearGallery();
+  clearPhotoGallery();
 
   refs.form.reset();
 }
-
-// function onLoadMore() {
-//   fetchArticals();
-//   if (articles.data.totalHits <= newsApiService.totalPage) {
-//     loadMoreBtn.hide();
-//     return warning();
-//   }
-// }
-
-function fetchArticals() {
+//отримання статьи
+function getCollectionPhotoRequest() {
   loadMoreBtn.disable();
 
   newsApiService.searchGelleryPhoto().then(articles => {
@@ -67,14 +57,16 @@ function fetchArticals() {
     if (newsApiService.totalPage >= 500) {
       warning();
       loadMoreBtn.hide();
-      galleryRender(articles.data.hits);
+
+      photoGalleryRenderer(articles.data.hits);
       return;
     }
     if (articles.data.hits.length < 40) {
       if (newsApiService.page === 1) {
         success(articles);
       }
-      galleryRender(articles.data.hits);
+
+      photoGalleryRenderer(articles.data.hits);
       loadMoreBtn.hide();
       return;
     }
@@ -83,25 +75,32 @@ function fetchArticals() {
       success(articles);
     }
 
-    galleryRender(articles.data.hits);
+    photoGalleryRenderer(articles.data.hits);
     if (articles.data.totalHits < 20) {
       loadMoreBtn.hide();
     }
     newsApiService.incrementPage();
     newsApiService.onTotalPage();
     loadMoreBtn.enable();
-    console.log(articles);
-    console.log(articles.data.totalHits);
-    console.log(newsApiService.totalPage);
   });
 }
-
-function galleryRender(photos) {
+//рендер галерей фото по запиту з серверу
+function photoGalleryRenderer(photos) {
+  console.log(photos);
   const gallery = photos
-    .map(({ webformatURL, tags, likes, views, comments, downloads }) => {
-      return `
-    <div class="photo-card">
-  <img src=${webformatURL} alt="${tags}" loading="lazy" class='img-card'/>
+    .map(
+      ({
+        webformatURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+        largeImageURL,
+      }) => {
+        return `
+    <div  class="photo-card">
+ <a href='${largeImageURL}'><img src=${webformatURL} alt="${tags}" loading="lazy" class='img-card'/></a> 
   <div class="info">
     <p class="info-item">
       <b>Likes</b>
@@ -121,24 +120,37 @@ function galleryRender(photos) {
     </p>
   </div>
 </div>`;
-    })
+      }
+    )
     .join('');
   refs.gallery.insertAdjacentHTML('beforeend', gallery);
-}
 
-function clearGallery() {
+  //? налаштування бібліотеки simplelightbox
+  let lightbox = new SimpleLightbox('.gallery a', {
+    overlayOpacity: 0.8,
+    animationSpeed: 300,
+  });
+}
+//очистити вміст контейнеру з фото
+function clearPhotoGallery() {
   refs.gallery.innerHTML = '';
 }
 
+// повыдомлення бібліотека Notify
 function failure() {
   Notify.failure(
     `"Sorry, there are no images matching your search query. Please try again."`
   );
 }
+// повыдомлення бібліотека Notify
 function success(articles) {
   Notify.success(`Hooray! We found ${articles.data.totalHits} images.`);
 }
 
+// повыдомлення бібліотека Notify
 function warning() {
   Notify.warning("We're sorry, but you've reached the end of search results.");
 }
+
+//! опрацювання помилки 400-404
+//! розібратись чому мигает кнопка Loading... при завантаженні сторінки на git
