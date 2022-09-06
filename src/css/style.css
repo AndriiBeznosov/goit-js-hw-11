@@ -126,6 +126,6 @@ li {
   display: block;
   margin-top: 30px;
 }
-.btn-primary.is-hidden {
+.is-hidden {
   display: none;
 }
