@@ -1,69 +1,105 @@
 import { Notify } from 'notiflix';
 import NewsApiService from './new-service';
-// Notify.success('Sol lucet omnibus');
+import debounce from 'lodash.debounce';
+import LoadMoreBtn from './load-more-btn';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+// import './css/commons.css';
 
+const DEBOUNCE_DELAY = 300;
 const refs = {
   form: document.querySelector('.search-form'),
   gallery: document.querySelector('.gallery'),
-  btnLoadMore: document.querySelector('.load-more'),
+  btnSearch: document.querySelector('.btn-search'),
+  input: document.querySelector('.input'),
 };
+const loadMoreBtn = new LoadMoreBtn({
+  selector: '[data-action="load-more"]',
+  hidden: true,
+});
 const newsApiService = new NewsApiService();
+console.log(loadMoreBtn);
 
 refs.form.addEventListener('submit', searchImage);
-refs.btnLoadMore.addEventListener('click', onLoadMore);
+loadMoreBtn.refs.button.addEventListener('click', onLoadMore);
+refs.input.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
+
+function onInput() {
+  refs.btnSearch.disabled = false;
+}
 
 function searchImage(e) {
   e.preventDefault();
 
-  if (!e.currentTarget.elements.searchQuery.value) {
-    return;
-  }
-  refs.gallery.innerHTML = '';
   newsApiService.query = e.currentTarget.elements.searchQuery.value;
+  if (!e.currentTarget.elements.searchQuery.value.trim()) {
+    setTimeout(() => {
+      refs.form.reset();
+    }, 500);
+    return Notify.info('Empty string, enter your request');
+  }
+  loadMoreBtn.show();
   newsApiService.resetPage();
-  newsApiService.onTotalPageReset();
-  refs.btnLoadMore.disabled = false;
+  fetchArticals();
+  refs.btnSearch.disabled = true;
+  clearGallery();
+  //   newsApiService.onTotalPageReset();
+  //   refs.btnLoadMore.disabled = false;
 
-  newsApiService.searchGelleryPhoto().then(res => {
-    if (res.data.hits.length === 0) {
-      return Notify.failure(
-        `"Sorry, there are no images matching your search query. Please try again."`
-      );
-    }
+  //   newsApiService.searchGelleryPhoto().then(articles => {
+  //     // if (res.data.hits.length === 0) {
+  //     //   refs.btnLoadMore.classList.add('is-hidden');
+  //     //   return Notify.failure(
+  //     //     `"Sorry, there are no images matching your search query. Please try again."`
+  //     //   );
+  //     // }
+  //     clearGallery();
+  //     galleryRender(articles.data.hits);
 
-    Notify.success(`Hooray! We found ${res.data.totalHits} images.`);
-    galleryRender(res.data.hits);
-    refs.btnLoadMore.classList.remove('is-hidden');
-    newsApiService.onTotalPage();
-  });
+  //     loadMoreBtn.enable();
+  //     // refs.btnLoadMore.classList.remove('is-hidden');
+
+  //     // Notify.success(`Hooray! We found ${res.data.totalHits} images.`);
+  //     // galleryRender(res.data.hits);
+  //     // refs.btnLoadMore.classList.remove('is-hidden');
+  //     // newsApiService.onTotalPage();
+  //     // refs.form.reset();
+  //   });
   // .catch();
 }
 
 function onLoadMore() {
   newsApiService.incrementPage();
-  newsApiService.searchGelleryPhoto().then(res => {
-    if (res.data.totalHits <= newsApiService.totalPage) {
-      refs.btnLoadMore.disabled = true;
-      return Notify.warning(
-        "We're sorry, but you've reached the end of search results."
-      );
-    }
-    console.log(res.data);
-    console.log(newsApiService.totalPage);
-    console.log(res.data.totalHits);
 
-    newsApiService.onTotalPage();
-    galleryRender(res.data.hits);
-  });
+  fetchArticals();
+
+  //   newsApiService.searchGelleryPhoto().then(res => {
+  //     // if (res.data.totalHits <= newsApiService.totalPage) {
+  //     //   refs.btnLoadMore.disabled = true;
+  //     //   refs.btnSearch.disabled = false;
+  //     //   return Notify.warning(
+  //     //     "We're sorry, but you've reached the end of search results."
+  //     //   );
+  //     // }
+  //     newsApiService.onTotalPage();
+
+  //   });
   //   .catch(error => {
   //     console.log(error);
   //   });;
 }
 
+function fetchArticals() {
+  loadMoreBtn.disable();
+  newsApiService.searchGelleryPhoto().then(articles => {
+    galleryRender(articles.data.hits);
+    loadMoreBtn.enable();
+  });
+}
+
 function galleryRender(photos) {
   const gallery = photos
     .map(({ webformatURL, tags, likes, views, comments, downloads }) => {
-      //   console.log(e.target.elements.searchQuery.value);
       return `
     <div class="photo-card">
   <img src=${webformatURL} alt="${tags}" loading="lazy" class='img-card'/>
@@ -91,4 +127,6 @@ function galleryRender(photos) {
   refs.gallery.insertAdjacentHTML('beforeend', gallery);
 }
 
-//<button type="button" class="load-more">Load more</button>`;
+function clearGallery() {
+  refs.gallery.innerHTML = '';
+}
