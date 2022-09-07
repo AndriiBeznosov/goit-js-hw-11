@@ -26,6 +26,7 @@ refs.input.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
 function onInput() {
   refs.btnSearch.disabled = false;
 }
+
 function searchImage(e) {
   e.preventDefault();
 
@@ -169,8 +170,9 @@ function warning() {
   Notify.warning("We're sorry, but you've reached the end of search results.");
 }
 
-//! опрацювання помилки 400-404
 //! розібратись чому мигает кнопка Loading... при завантаженні сторінки на git
+
+//!зробити анімацію Україна!
 
 //скрол для сторінки
 function scrollBy() {

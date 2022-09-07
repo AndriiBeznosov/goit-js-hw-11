@@ -49,7 +49,3 @@ export default class NewsApiService {
     this.totalPage = newPage;
   }
 }
-
-//  console.log(res.data);
-//  galleryRender(res.data.hits);
-//  refs.btnLoadMore.classList.remove('is-hidden');
