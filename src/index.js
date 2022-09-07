@@ -11,6 +11,7 @@ const refs = {
   gallery: document.querySelector('.gallery'),
   btnSearch: document.querySelector('.btn-search'),
   input: document.querySelector('.input'),
+  linkError: document.querySelector('.link-error'),
 };
 const loadMoreBtn = new LoadMoreBtn({
   selector: '[data-action="load-more"]',
@@ -25,7 +26,6 @@ refs.input.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
 function onInput() {
   refs.btnSearch.disabled = false;
 }
-
 function searchImage(e) {
   e.preventDefault();
 
@@ -36,57 +36,74 @@ function searchImage(e) {
     }, 500);
     return Notify.info('Empty string, enter your request');
   }
+
   loadMoreBtn.show();
   newsApiService.resetPage();
   newsApiService.onTotalPageReset();
   getCollectionPhotoRequest();
+  refs.form.reset();
   refs.btnSearch.disabled = true;
   clearPhotoGallery();
-
-  refs.form.reset();
 }
 //отримання статьи
 function getCollectionPhotoRequest() {
   loadMoreBtn.disable();
 
-  newsApiService.searchGelleryPhoto().then(articles => {
-    if (articles.data.hits.length === 0) {
-      loadMoreBtn.hide();
-      return failure();
-    }
-    if (newsApiService.totalPage >= 500) {
-      warning();
-      loadMoreBtn.hide();
+  newsApiService
+    .searchGelleryPhoto()
+    .then(articles => {
+      if (articles.data.hits.length === 0) {
+        loadMoreBtn.hide();
+        return failure();
+      }
+      if (newsApiService.totalPage >= 500) {
+        warning();
+        loadMoreBtn.hide();
 
-      photoGalleryRenderer(articles.data.hits);
-      return;
-    }
-    if (articles.data.hits.length < 40) {
+        photoGalleryRenderer(articles.data.hits);
+        return;
+      }
+      if (articles.data.hits.length < 40) {
+        if (newsApiService.page === 1) {
+          success(articles);
+        }
+
+        photoGalleryRenderer(articles.data.hits);
+        loadMoreBtn.hide();
+        return;
+      }
+
       if (newsApiService.page === 1) {
         success(articles);
       }
 
       photoGalleryRenderer(articles.data.hits);
+      if (articles.data.totalHits < 20) {
+        loadMoreBtn.hide();
+      }
+      newsApiService.incrementPage();
+      newsApiService.onTotalPage();
+      loadMoreBtn.enable();
+      if (newsApiService.page > 2) {
+        scrollBy();
+      }
+      console.log(articles);
+    })
+    .catch(error => {
+      console.log(error.message);
       loadMoreBtn.hide();
-      return;
-    }
 
-    if (newsApiService.page === 1) {
-      success(articles);
-    }
-
-    photoGalleryRenderer(articles.data.hits);
-    if (articles.data.totalHits < 20) {
-      loadMoreBtn.hide();
-    }
-    newsApiService.incrementPage();
-    newsApiService.onTotalPage();
-    loadMoreBtn.enable();
-  });
+      const errorMessage = `
+        <div class='container-error'>
+        <h2 class='title-error-h2'>${error.message}</h2>
+           <h1 class='title-error-h1'>${error.request.status}</h1>
+           <a href='index.html' class='link-error'>Go back home</a>
+        </div>`;
+      refs.gallery.innerHTML = errorMessage;
+    });
 }
 //рендер галерей фото по запиту з серверу
 function photoGalleryRenderer(photos) {
-  console.log(photos);
   const gallery = photos
     .map(
       ({
@@ -154,3 +171,18 @@ function warning() {
 
 //! опрацювання помилки 400-404
 //! розібратись чому мигает кнопка Loading... при завантаженні сторінки на git
+
+//скрол для сторінки
+function scrollBy() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+
+    behavior: 'smooth',
+  });
+}
+
+//зробити анімацію коли немає фото

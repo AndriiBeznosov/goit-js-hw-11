@@ -1,5 +1,8 @@
+* {
+  box-sizing: border-box;
+}
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   font-style: normal;
   font-size: 14px;
   background-color: #00ffff7e;
@@ -18,7 +21,6 @@ h5,
 h6,
 p {
   font-size: inherit;
-  font-weight: 400;
   margin: 0;
   padding: 0;
 }
@@ -41,7 +43,7 @@ li {
   box-shadow: 1px 2px 3px #212121;
 }
 .input {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   letter-spacing: 0.02em;
   padding: 5px 10px;
   font-size: 24px;
@@ -128,6 +130,37 @@ li {
   transition: opacity 250ms ease-in-out;
 }
 .is-hidden {
+  display: none;
   visibility: hidden;
   opacity: 0;
+}
+.container-error {
+  text-align: center;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+.title-error-h1 {
+  font-size: 72px;
+  margin-bottom: 15px;
+  color: rgba(0, 0, 0, 0.5);
+}
+.title-error-h2 {
+  font-size: 32px;
+  margin-bottom: 15px;
+  color: rgba(0, 0, 0, 0.5);
+}
+.link-error {
+  font-size: 30px;
+  text-decoration: none;
+  padding: 10px 25px;
+  background-color: rgba(205, 55, 55, 0.525);
+  border-radius: 30px;
+  box-shadow: 1px 2px 3px #212121;
+  color: rgba(0, 0, 0, 0.5);
+}
+.link-error:hover,
+.link-error:focus {
+  background-color: rgb(205, 55, 55);
+
+  color: rgb(0, 0, 0);
 }
